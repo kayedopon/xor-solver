@@ -20,19 +20,19 @@ class Linear:
     """
     def __init__(self, in_dim, out_dim):
         self.W = Parameter(np.random.rand(in_dim, out_dim) * (2 / np.sqrt(in_dim)))
-        self.b = Parameter(np.zeros(1, out_dim))
+        self.b = Parameter(np.zeros((1, out_dim)))
         self.x = None
 
     def forward(self, x):
         # x: (batch, in_dim)
         # W: (in_dim, out_dim)
         # b: (1, out_dim)
-        self.x = x @ self.W + self.b # the output will be of shape (batch, out_dim)
-        return self.x
+        self.x = x
+        out = x @ self.W.value + self.b.value # the output will be of shape (batch, out_dim)
+        return out
     
     def backward(self, dout):
         # dout: (batch, out_dim)
-
         self.W.grad += self.x.T @ dout
         self.b.grad += np.sum(dout, axis=0, keepdim=True)
         dx = dout @ self.W.T
@@ -118,8 +118,9 @@ class Adam:
     def step(self):
         self.t += 1
         for i, p in enumerate(self.params):
+            g = p.grad
             if self.weight_decay != 0:
-                p.grad = p.grad + self.weight_decay * p.value
+                g = g+ self.weight_decay * p.value
             self.m[i] = self.betas[0] * self.m[i] + (1 - self.betas[0]) *  p.grad
             self.v[i] = self.betas[1] * self.v[i] + (1 - self.betas[1]) * p.grad ** 2
 
@@ -129,3 +130,31 @@ class Adam:
             p.value = p.value - self.lr * (mh / (np.sqrt(vh) + self.eps))
 
 
+class Sequential:
+    def __init__(self, *args):
+        self.sequence = args
+
+    def forward(self, x):
+        for l in self.sequence:
+            x = l.forward(x)
+        return x
+    
+    def parameters(self):
+        parameters = []
+        for l in self.sequence:
+            parameters.extend(l.parameters())
+        return parameters
+
+
+class MLP:
+    def __init__(self, in_features, hidden_units, out_features):
+        pass
+
+l = Linear(2, 12)
+l2 = Linear(12, 12)
+l3 = Linear(12, 1)
+tanh = Tanh()
+
+s = Sequential(l, l2, l3)
+x = np.array([[1, 0], [1, 0]])
+print(s.forward(x))
