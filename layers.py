@@ -2,7 +2,6 @@ import numpy as np
 
 
 class Parameter:
-
     def __init__(self, value):
         self.value = value.astype(np.float64)
         self.grad = np.zeros_like(value)
@@ -34,8 +33,8 @@ class Linear:
     def backward(self, dout):
         # dout: (batch, out_dim)
         self.W.grad += self.x.T @ dout
-        self.b.grad += np.sum(dout, axis=0, keepdim=True)
-        dx = dout @ self.W.T
+        self.b.grad += np.sum(dout, axis=0, keepdims=True)
+        dx = dout @ self.W.value.T
         return dx
     
     def parameters(self):
@@ -81,74 +80,10 @@ class Tanh():
         return []
 
 
-class BinaryCrossEntropy:
-    def __init__(self):
-        self.y = None
-        self.p = None
-
-    def forward(self, p, y):
-        # p is (0, 1), y is in {0, 1}
-        eps = 1e-7
-        self.y = y
-        # use clipping to restrict p to (eps, 1 - eps), so log(0) won't happen
-        self.p = np.clip(p, eps, 1 - eps) 
-        loss = -(y * np.log(self.p) + (1 - y) * np.log(1 - self.p))
-        return np.mean(loss)
-    
-    def backward(self):
-        # dL/dp
-        n = self.y.shape[0]
-        return ((self.p - self.y) / (self.p * (1 - self.p))) / n
-
-
-# i am not going to use it because it is reduntant for xor solving
-class Adam:
-    def __init__(self, params, lr=0.001, betas=(0.9, 0.999), eps=1e-8, weight_decay=0):
-        self.params = params
-        self.lr = lr
-        self.betas = betas
-        self.eps = eps
-        self.weight_decay = weight_decay
-        self.t = 0
-
-        self.m = [np.zeros_like(p.value) for p in self.params]
-        self.v = [np.zeros_like(p.value) for p in self.params]
-        
-    def step(self):
-        self.t += 1
-        for i, p in enumerate(self.params):
-            g = p.grad
-            if self.weight_decay != 0:
-                g = g + self.weight_decay * p.value
-
-            self.m[i] = self.betas[0] * self.m[i] + (1 - self.betas[0]) *  p.grad
-            self.v[i] = self.betas[1] * self.v[i] + (1 - self.betas[1]) * p.grad ** 2
-
-            mh = self.m[i] / (1 - self.betas[0] ** self.t)
-            vh = self.v[i] / (1 - self.betas[1] ** self.t)
-
-            p.value = p.value - self.lr * (mh / (np.sqrt(vh) + self.eps))
-
-    def zero_grad(self):
-        for param in self.params:
-            param.zero_grad()
-
-
-class SGD:
-    def __init__(self, params, lr=0.1):
-        self.params = params
-        self.lr = lr
-    
-    def step(self):
-        for param in self.params:
-            param.value -= self.lr * self.param.grad
-
-    def zero_grad(self):
-        for param in self.params:
-            param.zero_grad()
-
-
 class Sequential:
+    """
+    Sequential layer allows you to run layers provided consequently.
+    """
     def __init__(self, *args):
         self.sequence = args
 
@@ -156,6 +91,11 @@ class Sequential:
         for l in self.sequence:
             x = l.forward(x)
         return x
+    
+    def backward(self, dout):
+        for l in reversed(self.sequence):
+            dout = l.backward(dout)
+        return dout
     
     def parameters(self):
         parameters = []
