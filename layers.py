@@ -88,7 +88,6 @@ class BinaryCrossEntropy:
 
     def forward(self, p, y):
         # p is (0, 1), y is in {0, 1}
-        # Sigmoid activation function is supposed to be used bofore BCE loss
         eps = 1e-7
         self.y = y
         # use clipping to restrict p to (eps, 1 - eps), so log(0) won't happen
@@ -98,11 +97,11 @@ class BinaryCrossEntropy:
     
     def backward(self):
         # dL/dp
-
         n = self.y.shape[0]
         return ((self.p - self.y) / (self.p * (1 - self.p))) / n
 
 
+# i am not going to use it because it is reduntant for xor solving
 class Adam:
     def __init__(self, params, lr=0.001, betas=(0.9, 0.999), eps=1e-8, weight_decay=0):
         self.params = params
@@ -120,7 +119,8 @@ class Adam:
         for i, p in enumerate(self.params):
             g = p.grad
             if self.weight_decay != 0:
-                g = g+ self.weight_decay * p.value
+                g = g + self.weight_decay * p.value
+
             self.m[i] = self.betas[0] * self.m[i] + (1 - self.betas[0]) *  p.grad
             self.v[i] = self.betas[1] * self.v[i] + (1 - self.betas[1]) * p.grad ** 2
 
@@ -128,6 +128,24 @@ class Adam:
             vh = self.v[i] / (1 - self.betas[1] ** self.t)
 
             p.value = p.value - self.lr * (mh / (np.sqrt(vh) + self.eps))
+
+    def zero_grad(self):
+        for param in self.params:
+            param.zero_grad()
+
+
+class SGD:
+    def __init__(self, params, lr=0.1):
+        self.params = params
+        self.lr = lr
+    
+    def step(self):
+        for param in self.params:
+            param.value -= self.lr * self.param.grad
+
+    def zero_grad(self):
+        for param in self.params:
+            param.zero_grad()
 
 
 class Sequential:
@@ -144,17 +162,3 @@ class Sequential:
         for l in self.sequence:
             parameters.extend(l.parameters())
         return parameters
-
-
-class MLP:
-    def __init__(self, in_features, hidden_units, out_features):
-        pass
-
-l = Linear(2, 12)
-l2 = Linear(12, 12)
-l3 = Linear(12, 1)
-tanh = Tanh()
-
-s = Sequential(l, l2, l3)
-x = np.array([[1, 0], [1, 0]])
-print(s.forward(x))
