@@ -80,3 +80,52 @@ class Tanh():
     def parameters(self):
         return []
 
+
+class BinaryCrossEntropy:
+    def __init__(self):
+        self.y = None
+        self.p = None
+
+    def forward(self, p, y):
+        # p is (0, 1), y is in {0, 1}
+        # Sigmoid activation function is supposed to be used bofore BCE loss
+        eps = 1e-7
+        self.y = y
+        # use clipping to restrict p to (eps, 1 - eps), so log(0) won't happen
+        self.p = np.clip(p, eps, 1 - eps) 
+        loss = -(y * np.log(self.p) + (1 - y) * np.log(1 - self.p))
+        return np.mean(loss)
+    
+    def backward(self):
+        # dL/dp
+
+        n = self.y.shape[0]
+        return ((self.p - self.y) / (self.p * (1 - self.p))) / n
+
+
+class Adam:
+    def __init__(self, params, lr=0.001, betas=(0.9, 0.999), eps=1e-8, weight_decay=0):
+        self.params = params
+        self.lr = lr
+        self.betas = betas
+        self.eps = eps
+        self.weight_decay = weight_decay
+        self.t = 0
+
+        self.m = [np.zeros_like(p.value) for p in self.params]
+        self.v = [np.zeros_like(p.value) for p in self.params]
+        
+    def step(self):
+        self.t += 1
+        for i, p in enumerate(self.params):
+            if self.weight_decay != 0:
+                p.grad = p.grad + self.weight_decay * p.value
+            self.m[i] = self.betas[0] * self.m[i] + (1 - self.betas[0]) *  p.grad
+            self.v[i] = self.betas[1] * self.v[i] + (1 - self.betas[1]) * p.grad ** 2
+
+            mh = self.m[i] / (1 - self.betas[0] ** self.t)
+            vh = self.v[i] / (1 - self.betas[1] ** self.t)
+
+            p.value = p.value - self.lr * (mh / (np.sqrt(vh) + self.eps))
+
+
