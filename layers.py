@@ -11,8 +11,8 @@ class Parameter:
 
 class Linear:
     """
-    Linear class is an implementaion of linear layer that solve the following
-    equation: y = xw + b.
+    Linear class is an implementaion of linear layer that solve the following equation: y = xw + b.
+
     Args: 
         in_features (int): number of features for input.
         out_features (int): number of features staged for output
@@ -43,7 +43,10 @@ class Linear:
 
 class Sigmoid:
     """
-    The implementation of Sigmoid activation function: `1/(1+e^-x)`
+    The implementation of Sigmoid activation function.
+
+    Computes: 
+        `1/(1+e^-x)`
     """
     def __init__(self):
         self.out = None
@@ -61,7 +64,10 @@ class Sigmoid:
 
 class Tanh():
     """
-    The implementation of Tanh activation function: `(e^x - e^-x)/(e^x + e^-x)`
+    The implementation of Tanh activation function.
+
+    Computes:
+        `(e^x - e^-x)/(e^x + e^-x)`
     """
     def __init__(self):
         self.out = None

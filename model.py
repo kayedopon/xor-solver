@@ -17,7 +17,8 @@ class MLP:
         self.mlp = Sequential(
             Linear(in_features, hidden_units),
             Tanh(),
-            Linear(hidden_units, out_features)
+            Linear(hidden_units, out_features),
+            Sigmoid(),
         )
     
     def forward(self, x):
