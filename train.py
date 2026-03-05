@@ -1,18 +1,14 @@
 import numpy as np
-import pandas as pd
 
 from model import MLP
 from loss import BinaryCrossEntropy
 from optim import SGD
+from utils import load_csv, plot_results
 
 
-def load_csv(filepath="data.csv"):
-    df = pd.read_csv(filepath)
-    X = np.array(df.iloc[:, :2])
-    y = np.array(df.iloc[:, 2])
-    return X, y
+def train_test_split(X, y, test_size=0.2, shuffle=True, random_state=42):
+    np.random.seed(random_state)
 
-def train_test_split(X, y, test_size=0.2, shuffle=True):
     n = len(X)
     train_length= int(n * (1 - test_size))
 
@@ -60,7 +56,7 @@ def train_step(model, X_train, y_train, loss_fn, optim):
     
     train_loss /= n
     train_acc = accuracy / n
-    return train_loss, train_acc
+    return train_loss, train_acc * 100
 
 def test_step(model, X_test, y_test, loss_fn):
     test_loss = 0.0
@@ -83,25 +79,39 @@ def test_step(model, X_test, y_test, loss_fn):
     
     test_loss /= n
     test_acc = accuracy / n
-    return test_loss, test_acc
+    return test_loss, test_acc * 100
 
 def train(model, X_train, X_test, y_train, y_test, loss_fn, optim, epochs):
+    res = {
+        "train_loss": [],
+        "train_acc": [],
+        "test_loss": [],
+        "test_acc": []
+    }
     for epoch in range(epochs):
 
         train_loss, train_acc = train_step(model, X_train, y_train, loss_fn, optim)
         test_loss, test_acc = test_step(model, X_test, y_test, loss_fn)
-        print(epoch)
-        # to be finished
+
+        print(f"Epoch: {epoch + 1} | Train_loss: {train_loss:.4f} | Train_acc: {train_acc:.1f}% | Test_loss: {test_loss:.4f} | Test_acc: {test_acc:.1f}%")
+
+        res["train_loss"].append(train_loss)
+        res["train_acc"].append(train_acc)
+        res["test_loss"].append(test_loss)
+        res["test_acc"].append(test_acc)
+
+    return res
 
 def main():
+    np.random.seed(42)
     X, y = load_csv()
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
     # initialize hyperparameters
-    EPOCHS = 2
+    EPOCHS = 4
     in_features = 2
     out_features = 1
-    hidden_units = 4
+    hidden_units = 10
 
     # instantiate MLP
     model = MLP(in_features, hidden_units, out_features)
@@ -111,6 +121,7 @@ def main():
     optim = SGD(model.parameters(), lr=0.1)
 
     res = train(model, X_train, X_test, y_train, y_test, loss_fn, optim, EPOCHS)
+    plot_results(res)
 
 if __name__ == "__main__":
     main()

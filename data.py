@@ -4,7 +4,7 @@ import pandas as pd
 np.random.seed(42)
 
 # input
-X = np.random.rand(50, 2)
+X = np.random.rand(75, 2)
 X[X > 0.5] = 1
 X[X < 0.5] = 0
 X = X.astype(int)
