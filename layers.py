@@ -1,15 +1,8 @@
 import numpy as np
 
+from base import Parameter, Module
 
-class Parameter:
-    def __init__(self, value):
-        self.value = value.astype(np.float64)
-        self.grad = np.zeros_like(value)
-    
-    def zero_grad(self):
-        self.grad[...] = 0.0
-
-class Linear:
+class Linear(Module):
     """
     Linear class is an implementaion of linear layer that solve the following equation: y = xw + b.
 
@@ -18,6 +11,7 @@ class Linear:
         out_features (int): number of features staged for output
     """
     def __init__(self, in_dim, out_dim):
+        super().__init__()
         self.W = Parameter(np.random.rand(in_dim, out_dim) * (2 / np.sqrt(in_dim)))
         self.b = Parameter(np.zeros((1, out_dim)))
         self.x = None
@@ -36,9 +30,6 @@ class Linear:
         self.b.grad += np.sum(dout, axis=0, keepdims=True)
         dx = dout @ self.W.value.T
         return dx
-    
-    def parameters(self):
-        return [self.W, self.b]
 
 
 class Sigmoid:
@@ -60,7 +51,7 @@ class Sigmoid:
     
     def parameters(self):
         return []
-    
+        
 
 class Tanh():
     """
@@ -86,25 +77,24 @@ class Tanh():
         return []
 
 
-class Sequential:
+class Sequential(Module):
     """
     Sequential layer allows you to run layers provided consequently.
     """
     def __init__(self, *args):
-        self.sequence = args
+        super().__init__()
+        self.layers = []
+
+        for i, layer in enumerate(args):
+            setattr(self, str(i), layer)
+            self.layers.append(layer)
 
     def forward(self, x):
-        for l in self.sequence:
+        for l in self.layers:
             x = l.forward(x)
         return x
     
     def backward(self, dout):
-        for l in reversed(self.sequence):
+        for l in reversed(self.layers):
             dout = l.backward(dout)
         return dout
-    
-    def parameters(self):
-        parameters = []
-        for l in self.sequence:
-            parameters.extend(l.parameters())
-        return parameters

@@ -1,32 +1,5 @@
 import numpy as np
 
-from model import MLP
-from loss import BinaryCrossEntropy
-from optim import SGD
-from utils import load_csv, plot_results
-
-
-def train_test_split(X, y, test_size=0.2, shuffle=True, random_state=42):
-    np.random.seed(random_state)
-
-    n = len(X)
-    train_length= int(n * (1 - test_size))
-
-    indices = np.arange(n)
-    
-    if shuffle == True:
-        np.random.shuffle(indices)
-
-    train_idx = indices[:train_length]
-    test_idx = indices[train_length:]
-
-    X_train = X[train_idx]
-    X_test = X[test_idx]
-
-    y_train = y[train_idx]
-    y_test = y[test_idx]
-
-    return X_train, X_test, y_train, y_test
 
 def train_step(model, X_train, y_train, loss_fn, optim):
     train_loss = 0.0
@@ -101,27 +74,3 @@ def train(model, X_train, X_test, y_train, y_test, loss_fn, optim, epochs):
         res["test_acc"].append(test_acc)
 
     return res
-
-def main():
-    np.random.seed(42)
-    X, y = load_csv()
-    X_train, X_test, y_train, y_test = train_test_split(X, y)
-
-    # initialize hyperparameters
-    EPOCHS = 4
-    in_features = 2
-    out_features = 1
-    hidden_units = 10
-
-    # instantiate MLP
-    model = MLP(in_features, hidden_units, out_features)
-
-    # initialize loss function and optimizer
-    loss_fn = BinaryCrossEntropy()
-    optim = SGD(model.parameters(), lr=0.1)
-
-    res = train(model, X_train, X_test, y_train, y_test, loss_fn, optim, EPOCHS)
-    plot_results(res)
-
-if __name__ == "__main__":
-    main()

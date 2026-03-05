@@ -1,9 +1,9 @@
 import numpy as np
 
 from layers import Linear, Tanh, Sequential, Sigmoid
+from base import Parameter, Module
 
-
-class MLP:
+class MLP(Module):
     """
     Multi Layer Perceptron with three layers (input, hidden, output) that 
     return probabilities rather than logits due to presence of sigmoid.
@@ -14,6 +14,7 @@ class MLP:
         out_features (int default=1): Number of values staged for output.
     """
     def __init__(self, in_features:int=2, hidden_units:int=4, out_features:int=1):
+        super().__init__()
         self.mlp = Sequential(
             Linear(in_features, hidden_units),
             Tanh(),
@@ -26,6 +27,3 @@ class MLP:
 
     def backward(self, dout):
         return self.mlp.backward(dout)
-    
-    def parameters(self):
-        return self.mlp.parameters()

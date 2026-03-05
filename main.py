@@ -1,0 +1,32 @@
+import numpy as np
+
+from model import MLP
+from loss import BinaryCrossEntropy
+from optim import SGD
+from utils import load_csv, plot_results, train_test_split
+from train import train
+
+
+def main():
+    np.random.seed(42)
+    X, y = load_csv()
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
+
+    # initialize hyperparameters
+    EPOCHS = 4
+    in_features = 2
+    out_features = 1
+    hidden_units = 10
+
+    # instantiate MLP
+    model = MLP(in_features, hidden_units, out_features)
+
+    # initialize loss function and optimizer
+    loss_fn = BinaryCrossEntropy()
+    optim = SGD(model.parameters(), lr=0.1)
+
+    res = train(model, X_train, X_test, y_train, y_test, loss_fn, optim, EPOCHS)
+    plot_results(res)
+
+if __name__ == "__main__":
+    main()
