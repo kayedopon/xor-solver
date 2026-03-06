@@ -32,7 +32,7 @@ class Linear(Module):
         return dx
 
 
-class Sigmoid:
+class Sigmoid():
     """
     The implementation of Sigmoid activation function.
 
@@ -48,9 +48,6 @@ class Sigmoid:
 
     def backward(self, dout):
         return dout * (self.out * (1 - self.out))
-    
-    def parameters(self):
-        return []
         
 
 class Tanh():
@@ -72,9 +69,6 @@ class Tanh():
     def backward(self, dout):
         # the derivative used here was manually calculated and is the same as the known 1 - tanh(x)**2
         return dout * ((4 * np.exp(2 * self.x)) / (np.exp(2 * self.x) + 1) ** 2)
-    
-    def parameters(self):
-        return []
 
 
 class Sequential(Module):

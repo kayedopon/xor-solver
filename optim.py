@@ -13,7 +13,8 @@ class Adam:
         weight_decay (int, optional): weight decay (default: 0).
     """
     def __init__(self, params, lr=0.001, betas=(0.9, 0.999), eps=1e-8, weight_decay=0):
-        self.params = params
+        self.params = list(params)
+        print(params)
         self.lr = lr
         self.betas = betas
         self.eps = eps
@@ -56,7 +57,7 @@ class SGD:
         lr (float, optional): learning rate (default: 1e-3).
     """
     def __init__(self, params, lr=0.1):
-        self.params = params
+        self.params = list(params)
         self.lr = lr
     
     def step(self):

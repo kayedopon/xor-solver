@@ -14,7 +14,7 @@ def load_csv(filepath="data.csv"):
     return X, y
 
 def is_float_regex(value):
-    pattern = r'^\d+(\.\d+)?$'
+    pattern = r'^-?\d+(\.\d+)?$'
     return bool(re.match(pattern, value))
 
 def train_test_split(X, y, test_size=0.2, shuffle=True, random_state=42):
@@ -74,7 +74,7 @@ def load_model(model, path="params.txt"):
             line = line.strip('\n').split(' ')
             if line == "":
                 continue
-                
+
             if not is_float_regex(line[0]):
                 if label is not None:
                     params[label] = np.array(buffer)

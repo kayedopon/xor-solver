@@ -3,7 +3,7 @@ import numpy as np
 from model import MLP
 from loss import BinaryCrossEntropy
 from optim import SGD
-from utils import load_csv, plot_results, train_test_split
+from utils import load_csv, plot_results, train_test_split, save_model, load_model
 from train import train
 
 
@@ -27,6 +27,16 @@ def main():
 
     res = train(model, X_train, X_test, y_train, y_test, loss_fn, optim, EPOCHS)
     plot_results(res)
+
+    save_model(model)
+
+    # load the model's parameters into new model2 with the same architecture
+    model2 = MLP(in_features, hidden_units, out_features)
+    load_model(model2)
+    
+    # check whether the parameters loaded correctly
+    print(all(np.array_equal(x.value, y.value) for x, y in zip(model.parameters(), model2.parameters())))
+
 
 if __name__ == "__main__":
     main()
