@@ -27,3 +27,8 @@ class MLP(Module):
 
     def backward(self, dout):
         return self.mlp.backward(dout)
+    
+    def predict(self, data):
+        probs = self.forward(data)
+        preds = probs > 0.5
+        return preds
